@@ -33,10 +33,10 @@ public class WebEvents {
            script = "window.dispatchEvent(new CustomEvent(\"" + eventName + "\", {detail:" + arguments.toString() + "}))";
         }
         Log.d("groovelauncher", "dispatchEventScript: " + script);
-        webView.evaluateJavascript(script, null);
+        //webView.evaluateJavascript(script, null);
     }
 
     public void dispatchEvent(events eventName, JSONObject arguments) {
-        dispatchEvent(eventName.toString(), arguments);
+        //dispatchEvent(eventName.toString(), arguments);
     }
 }

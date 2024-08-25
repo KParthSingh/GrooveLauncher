@@ -27,6 +27,12 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
 
+import org.mozilla.geckoview.AllowOrDeny;
+import org.mozilla.geckoview.GeckoResult;
+import org.mozilla.geckoview.GeckoRuntime;
+import org.mozilla.geckoview.GeckoSession;
+import org.mozilla.geckoview.GeckoSessionSettings;
+
 import web.bmdominatezz.gravy.Utils.*;
 import web.bmdominatezz.gravy.MainActivity;
 
@@ -36,12 +42,30 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
-public class GrooveWebView extends WebView {
+public class GrooveWebView extends org.mozilla.geckoview.GeckoView {
     private Context m_context;
     public List<ResolveInfo> retrievedApps;
     PackageManager packageManager;
     public Insets lastInsets;
     WebEvents webEvents;
+    GeckoSession session;
+    GeckoRuntime runtime;
+
+    private GeckoSession.NavigationDelegate createNavigationDelegate() {
+        return new GeckoSession.NavigationDelegate() {
+
+            @Override
+            public GeckoResult<AllowOrDeny> onLoadRequest(GeckoSession session, GeckoSession.NavigationDelegate.LoadRequest request) {
+                // Conditioning when the request should load.
+                Log.d("groovelauncher", "onLoadRequest: " + request);
+                if (request.uri.contains("pattern")) {
+                    return GeckoResult.allow();
+                } else {
+                    return GeckoResult.deny();
+                }
+            }
+        };
+    }
 
     public GrooveWebView(Context context) {
         super(context);
@@ -50,11 +74,6 @@ public class GrooveWebView extends WebView {
 
     public GrooveWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        m_context = context;
-    }
-
-    public GrooveWebView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
         m_context = context;
     }
 
@@ -67,13 +86,18 @@ public class GrooveWebView extends WebView {
 
     public void init(PackageManager pm, MainActivity mainActivity) {
         packageManager = pm;
-        webEvents = new WebEvents(m_context, this);
+        session = new GeckoSession();
+        runtime = GeckoRuntime.create(m_context);
+        GeckoSessionSettings settings = session.getSettings();
+        settings.setAllowJavascript(true); // Enable remote debugging
+
+        //webEvents = new WebEvents(m_context, this);
 
         final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(m_context))
                 .build();
 
-        this.setWebViewClient(new WebViewClientCompat() {
+        /*this.setWebViewClient(new WebViewClientCompat() {
 
 
             @Override
@@ -112,18 +136,7 @@ public class GrooveWebView extends WebView {
                             Log.d("ResolveInfo", "Intent is null. Package may not be installed.");
                         }
 
-                       /* couldnt decide which one is faster :(
-                        for (ResolveInfo resolveInfo : retrievedApps) {
-                            if (iconPackageName.equals(resolveInfo.activityInfo.packageName)) {
 
-                                Drawable appIcon = resolveInfo.activityInfo.loadIcon(packageManager);
-
-                                InputStream inputStream = loadDrawableAsStream(appIcon);
-                                if (inputStream != null) {
-                                    return new WebResourceResponse("image/png", "UTF-8", inputStream);
-                                }
-                            }
-                        }*/
 
 
                     } else {
@@ -173,7 +186,7 @@ public class GrooveWebView extends WebView {
                 contentSelectionIntent.setType("image/*");
                 Intent[] intentArray;
                 if (takePictureIntent != null) {
-                    intentArray = new Intent[] { takePictureIntent };
+                    intentArray = new Intent[]{takePictureIntent};
                 } else {
                     intentArray = new Intent[0];
                 }
@@ -216,7 +229,7 @@ public class GrooveWebView extends WebView {
                 // Create file chooser intent
                 Intent chooserIntent = Intent.createChooser(i, "Image Chooser");
                 // Set camera intent to file chooser
-                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Parcelable[] { captureIntent });
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Parcelable[]{captureIntent});
                 // On select image call onActivityResult method of activity
                 mainActivity.startActivityForResult(chooserIntent, mainActivity.FILECHOOSER_RESULTCODE);
             }
@@ -233,17 +246,17 @@ public class GrooveWebView extends WebView {
                 openFileChooser(uploadMsg, acceptType);
             }
 
-        });
-        WebSettings webViewSettings = this.getSettings();
+        });*/
+       /* WebSettings webViewSettings = this.getSettings();
         webViewSettings.setJavaScriptEnabled(true);
-        webViewSettings.setDomStorageEnabled(true);
-
+        webViewSettings.setDomStorageEnabled(true);*/
         // Assets are hosted under http(s)://appassets.androidplatform.net/assets/... .
-        this.addJavascriptInterface(new WebInterface((MainActivity) mainActivity), "Groove");
-
-        this.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+        //this.addJavascriptInterface(new WebInterface((MainActivity) mainActivity), "Groove");
+        session.loadUri("https://appassets.androidplatform.net/assets/index.html");
+        //this.loadUrl("https://appassets.androidplatform.net/assets/index.html");
         retrieveApps();
     }
+
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());

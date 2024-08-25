@@ -89,8 +89,7 @@ public class MainActivity extends AppCompatActivity {
             if(activityDispatchHomeEvent) webEvents.dispatchEvent(WebEvents.events.homeButtonPress, null);
             Log.d("groovelauncher", "homeButtonPress: ");
         } else {
-            if (activityDispatchEvent)
-                webEvents.dispatchEvent(WebEvents.events.activityResume, null);
+            //if (activityDispatchEvent) webEvents.dispatchEvent(WebEvents.events.activityResume, null);
             activityPaused = false;
             Log.d("groovelauncher", "onResume: ");
         }
@@ -120,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             //Don't uncomment this cause webview itself will deal with inset paddings
             //v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            webEvents.dispatchEvent(WebEvents.events.systemInsetsChange, null);
+            //webEvents.dispatchEvent(WebEvents.events.systemInsetsChange, null);
             webView.lastInsets = systemBars;
             return insets;
         });
