@@ -42,4 +42,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+// https://mvnrepository.com/artifact/org.mozilla.geckoview/geckoview
+    implementation("org.mozilla.geckoview:geckoview:129.0.20240819150008")
 }
